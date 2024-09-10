@@ -7,8 +7,11 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
-			"IItem": {
+			"productType": {
 				"properties": {
+					"_id": {
+						"type": "string"
+					},
 					"name": {
 						"type": "string"
 					},
@@ -18,12 +21,18 @@
 					"price": {
 						"type": "number",
 						"format": "double"
+					},
+					"stock": {
+						"type": "number",
+						"format": "double"
 					}
 				},
 				"required": [
+					"_id",
 					"name",
 					"category",
-					"price"
+					"price",
+					"stock"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -50,7 +59,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/IItem"
+										"$ref": "#/components/schemas/productType"
 									},
 									"type": "array"
 								}
@@ -60,6 +69,97 @@
 				},
 				"security": [],
 				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateProduct",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/productType"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/productType"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/v1/products/{id}": {
+			"get": {
+				"operationId": "GetOneProductByID",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"allOf": [
+										{
+											"$ref": "#/components/schemas/productType"
+										}
+									],
+									"nullable": true
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"delete": {
+				"operationId": "DeleteProductById",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"allOf": [
+										{
+											"$ref": "#/components/schemas/productType"
+										}
+									],
+									"nullable": true
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
 			}
 		}
 	},

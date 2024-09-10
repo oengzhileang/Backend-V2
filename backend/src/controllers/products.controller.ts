@@ -1,143 +1,66 @@
-import { Controller, Route, Get } from "tsoa";
-
-export interface IItem {
-  name: string;
-  category: string;
-  price: number;
-}
+import { Controller, Route, Get, Post, Body, Path, Delete, Patch } from "tsoa";
+import { productType } from "../types/productsType";
+import Products from "../models/productsModel";
 
 @Route("/v1/products")
 export class ProductController extends Controller {
+  // Get all products
   @Get("/")
-  public getAllProducts(): Promise<IItem[]> {
-    return Promise.resolve([
-      { id: 1, name: "Cherrie", category: "fruit", price: 10.2 },
-    ]);
+  public async getAllProducts(): Promise<productType[]> {
+    // Fetch all products from the database
+    return Products.find().exec();
+  }
+
+  //get one product by id
+  @Get("/:id")
+  public async getOneProductByID(
+    @Path() id: string
+  ): Promise<productType | null> {
+    const product = await Products.findById(id).exec();
+    if (!product) {
+      this.setStatus(404); // Not Found
+      return null;
+    }
+    return product;
+  }
+
+  // Create a new product
+  @Post("/")
+  public async createProduct(
+    @Body() requestBody: productType
+  ): Promise<productType> {
+    // Save a new product to the database
+    return new Products(requestBody).save();
+  }
+
+  //update product by id use patch method
+  @Patch("/:id")
+  public async updateProductById(
+    @Path() id: String,
+    @Body() requestBody: Partial<productType>
+  ): Promise<productType | null> {
+    const updateProduct = await Products.findByIdAndUpdate(id, requestBody, {
+      new: true,
+      runValidators: true,
+    }).exec();
+    if (!updateProduct) {
+      this.setStatus(404);
+      return null;
+    }
+    return updateProduct;
+  }
+
+  //delete product by id
+  @Delete("/:id")
+  public async deleteProductById(
+    @Path() id: String
+  ): Promise<productType | null> {
+    const deleteProduct = await Products.findByIdAndDelete(id).exec();
+    if (!deleteProduct) {
+      this.setStatus(404); //not found
+      return null;
+    }
+    this.setStatus(200);
+    return deleteProduct;
   }
 }
-
-// import Products from "@/src/models/productsModel";
-// import { Request, Response, NextFunction } from "express";
-// // import mongoose from "mongoose";
-
-// //get all products
-// export async function getAllProducts(_req: Request, res: Response) {
-//   const product = await Products.find({});
-//   res.status(200).json(product);
-// }
-
-// //get single product
-// export async function getSingleProduct(
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) {
-//   try {
-//     // if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-//     //   const error = new Error("Product not found") as AppError;
-//     //   error.statusCode = 404;
-//     //   throw error;
-//     // }
-//     const id = req.params.id;
-//     const product = await Products.findById(id);
-//     // if (!product) {
-//     //   return res.status(404).json({ error: "Product not found" });
-//     // }
-//     res.status(200).json(product);
-//   } catch (error) {
-//     // res.status(500).json({ message: (error as any).message });
-//     // res.status(500).json({ message: "Server error" });
-//     next(error);
-//   }
-// }
-
-// //create product
-// export async function createProduct(
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) {
-//   try {
-//     const { Pname, Pprice, Pcategory, Pstock } = req.body;
-//     const product = await Products.create({ Pname, Pprice, Pcategory, Pstock });
-//     res.status(200).json(product);
-//   } catch (error) {
-//     // if (error instanceof MongoError && error.code === 11000) {
-//     //   return res.status(400).json({ message: "Error this name already exist" });
-//     // }
-//     // res.status(500).json({ error: "Server error" });
-//     next(error);
-//   }
-//   // try {
-//   //   const newProduct = new Products(req.body);
-//   //   const savedProduct = await newProduct.save();
-//   //   res.status(201).json(savedProduct);
-//   // } catch (error) {
-//   //   res.status(400).json({ message: (error as any).message });
-//   // }
-// }
-
-// //update all product
-// export async function updateAllProduct(
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) {
-//   try {
-//     const { id } = req.params;
-//     const UpdateProduct = req.body;
-//     const product = await Products.findByIdAndUpdate(
-//       { _id: id },
-//       UpdateProduct,
-//       {
-//         new: true,
-//       }
-//     );
-//     if (!product) {
-//       return res.status(400).json({ error: "Item not found" });
-//     }
-//     res.status(200).json(product);
-//   } catch (error) {
-//     next(error);
-//   }
-// }
-
-// //update single product
-// export async function updateSingleProduct(
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) {
-//   try {
-//     const { id } = req.params;
-//     const product = await Products.findByIdAndUpdate(
-//       { _id: id },
-//       { ...req.body },
-//       { new: true }
-//     );
-//     if (!product) {
-//       return res.status(400).json({ error: "Item not found" });
-//     }
-//     res.status(200).json(product);
-//   } catch (error) {
-//     next(error);
-//   }
-// }
-
-// //delete product
-// export async function deleteProduct(
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) {
-//   try {
-//     const { id } = req.params;
-//     const product = await Products.findByIdAndDelete({ _id: id });
-//     if (!product) {
-//       return res.status(400).json({ error: "Item not found" });
-//     }
-//     res.status(200).json({ message: "Product delete success" });
-//   } catch (error) {
-//     next(error);
-//   }
-// }
